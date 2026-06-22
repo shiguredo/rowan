@@ -24,7 +24,7 @@ See LICENSE-APACHE and LICENSE-MIT for details.
 
 ---
 
-時雨堂による rust-analyzer/rowan のフォークです。
+時雨堂による [rust-analyzer/rowan](https://github.com/rust-analyzer/rowan) のフォークです。
 
 以下の変更を加えてあります。
 
