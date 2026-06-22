@@ -92,8 +92,6 @@ use std::{
     ptr, slice,
 };
 
-use countme::Count;
-
 use crate::{
     Direction, GreenNode, GreenToken, NodeOrToken, SyntaxText, TextRange, TextSize, TokenAtOffset,
     WalkEvent,
@@ -107,11 +105,7 @@ enum Green {
     Token { ptr: ptr::NonNull<GreenTokenData> },
 }
 
-struct _SyntaxElement;
-
 struct NodeData {
-    _c: Count<_SyntaxElement>,
-
     rc: Cell<u32>,
     parent: Cell<Option<ptr::NonNull<NodeData>>>,
     index: Cell<u32>,
@@ -232,7 +226,6 @@ impl NodeData {
     ) -> ptr::NonNull<NodeData> {
         let parent = ManuallyDrop::new(parent);
         let res = NodeData {
-            _c: Count::new(),
             rc: Cell::new(1),
             parent: Cell::new(parent.as_ref().map(|it| it.ptr)),
             index: Cell::new(index),

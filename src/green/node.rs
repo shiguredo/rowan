@@ -6,8 +6,6 @@ use std::{
     ops, ptr, slice,
 };
 
-use countme::Count;
-
 use crate::{
     GreenToken, NodeOrToken, TextRange, TextSize,
     arc::{Arc, HeaderSlice, ThinArc},
@@ -18,7 +16,6 @@ use crate::{
 pub(super) struct GreenNodeHead {
     kind: SyntaxKind,
     text_len: TextSize,
-    _c: Count<GreenNode>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -212,10 +209,8 @@ impl GreenNode {
             }
         });
 
-        let data = ThinArc::from_header_and_iter(
-            GreenNodeHead { kind, text_len: 0.into(), _c: Count::new() },
-            children,
-        );
+        let data =
+            ThinArc::from_header_and_iter(GreenNodeHead { kind, text_len: 0.into() }, children);
 
         // XXX: fixup `text_len` after construction, because we can't iterate
         // `children` twice.

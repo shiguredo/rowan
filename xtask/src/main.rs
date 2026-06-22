@@ -1,13 +1,12 @@
 use std::{
     env,
     path::PathBuf,
+    process::Command,
     sync::atomic::{AtomicBool, Ordering},
     time::{Duration, Instant},
 };
 
-use anyhow::anyhow;
-use xshell::{Shell, cmd};
-pub type Result<T> = anyhow::Result<T>;
+pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
 fn main() {
     if let Err(err) = try_main() {
@@ -42,34 +41,43 @@ impl CargoToml {
                 _ => (),
             }
         }
-        Err(anyhow!("can't find `{}` in {}", field, self.path.display()))?
+        Err(format!("can't find `{}` in {}", field, self.path.display()).into())
     }
 
-    pub fn publish(&self, sh: &mut Shell) -> Result<()> {
+    pub fn publish(&self) -> Result<()> {
         let token = env::var("CRATES_IO_TOKEN").unwrap_or("no token".to_string());
-        let dry_run = dry_run();
-        cmd!(sh, "cargo publish --token {token} {dry_run...}").run()?;
-        Ok(())
+        let mut cmd = Command::new("cargo");
+        cmd.arg("publish").arg("--token").arg(&token);
+        if let Some(dry_run) = dry_run() {
+            cmd.arg(dry_run);
+        }
+        run(&mut cmd)
     }
 
-    pub fn publish_all(&self, dirs: &[&str], sh: &mut Shell) -> Result<()> {
+    pub fn publish_all(&self, dirs: &[&str]) -> Result<()> {
         let token = env::var("CRATES_IO_TOKEN").unwrap_or("no token".to_string());
         if dry_run().is_none() {
             for &dir in dirs {
                 for _ in 0..20 {
                     std::thread::sleep(Duration::from_secs(10));
-                    if cmd!(
-                        sh,
-                        "cargo publish --manifest-path {dir}'/Cargo.toml' --token {token} --dry-run"
-                    )
-                    .run()
-                    .is_ok()
-                    {
+                    let mut cmd = Command::new("cargo");
+                    cmd.arg("publish")
+                        .arg("--manifest-path")
+                        .arg(format!("{}/Cargo.toml", dir))
+                        .arg("--token")
+                        .arg(&token)
+                        .arg("--dry-run");
+                    if run(&mut cmd).is_ok() {
                         break;
                     }
                 }
-                cmd!(sh, "cargo publish --manifest-path {dir}'/Cargo.toml' --token {token}")
-                    .run()?;
+                let mut cmd = Command::new("cargo");
+                cmd.arg("publish")
+                    .arg("--manifest-path")
+                    .arg(format!("{}/Cargo.toml", dir))
+                    .arg("--token")
+                    .arg(&token);
+                run(&mut cmd)?;
             }
         }
         Ok(())
@@ -98,79 +106,104 @@ pub fn set_dry_run(yes: bool) {
 }
 
 fn try_main() -> Result<()> {
-    let mut sh = Shell::new()?;
     let subcommand = std::env::args().nth(1);
     match subcommand {
         Some(it) if it == "ci" => (),
         _ => {
             print_usage();
-            Err(anyhow!("invalid arguments"))?
+            return Err("invalid arguments".into());
         }
     }
     let cargo_toml = cargo_toml()?;
     {
         let _s = section("TEST");
         for &release in &[None, Some("--release")] {
-            cmd!(sh, "cargo test {release...} --workspace -- --nocapture").run()?;
+            let mut cmd = Command::new("cargo");
+            cmd.arg("test");
+            if let Some(release) = release {
+                cmd.arg(release);
+            }
+            cmd.arg("--workspace").arg("--").arg("--nocapture");
+            run(&mut cmd)?;
         }
     }
 
     let version = cargo_toml.version()?;
     let tag = format!("v{}", version);
 
-    let dry_run = env::var("CI").is_err()
-        || git::has_tag(&tag, &mut sh)?
-        || git::current_branch(&mut sh)? != "master";
+    let dry_run =
+        env::var("CI").is_err() || git::has_tag(&tag)? || git::current_branch()? != "master";
     set_dry_run(dry_run);
 
     {
         let _s = section("PUBLISH");
-        cargo_toml.publish(&mut sh)?;
-        git::tag(&tag, &mut sh)?;
-        git::push_tags(&mut sh)?;
+        cargo_toml.publish()?;
+        git::tag(&tag)?;
+        git::push_tags()?;
     }
     Ok(())
 }
 
 pub mod git {
-    use xshell::{Shell, cmd};
+    use std::process::Command;
 
-    use super::{Result, dry_run};
+    use super::{Result, dry_run, read, run};
 
-    pub fn current_branch(sh: &mut Shell) -> Result<String> {
-        let res = cmd!(sh, "git branch --show-current").read()?;
-        Ok(res)
+    pub fn current_branch() -> Result<String> {
+        let mut cmd = Command::new("git");
+        cmd.arg("branch").arg("--show-current");
+        read(&mut cmd)
     }
 
-    pub fn tag_list(sh: &mut Shell) -> Result<Vec<String>> {
-        let tags = cmd!(sh, "git tag --list").read()?;
+    pub fn tag_list() -> Result<Vec<String>> {
+        let mut cmd = Command::new("git");
+        cmd.arg("tag").arg("--list");
+        let tags = read(&mut cmd)?;
         let res = tags.lines().map(|it| it.trim().to_string()).collect();
         Ok(res)
     }
 
-    pub fn has_tag(tag: &str, sh: &mut Shell) -> Result<bool> {
-        let res = tag_list(sh)?.iter().any(|it| it == tag);
+    pub fn has_tag(tag: &str) -> Result<bool> {
+        let res = tag_list()?.iter().any(|it| it == tag);
         Ok(res)
     }
 
-    pub fn tag(tag: &str, sh: &mut Shell) -> Result<()> {
+    pub fn tag(tag: &str) -> Result<()> {
         if dry_run().is_some() {
             return Ok(());
         }
-        cmd!(sh, "git tag {tag}").run()?;
-        Ok(())
+        let mut cmd = Command::new("git");
+        cmd.arg("tag").arg(tag);
+        run(&mut cmd)
     }
 
-    pub fn push_tags(sh: &mut Shell) -> Result<()> {
+    pub fn push_tags() -> Result<()> {
         // `git push --tags --dry-run` exists, but it will fail with permissions
         // error for forks.
         if dry_run().is_some() {
             return Ok(());
         }
 
-        cmd!(sh, "git push --tags").run()?;
-        Ok(())
+        let mut cmd = Command::new("git");
+        cmd.arg("push").arg("--tags");
+        run(&mut cmd)
     }
+}
+
+fn run(cmd: &mut Command) -> Result<()> {
+    let status = cmd.status()?;
+    if !status.success() {
+        return Err(format!("command failed with status {status:?}").into());
+    }
+    Ok(())
+}
+
+fn read(cmd: &mut Command) -> Result<String> {
+    let output = cmd.output()?;
+    if !output.status.success() {
+        return Err(format!("command failed with status {:?}", output.status).into());
+    }
+    Ok(String::from_utf8_lossy(&output.stdout).trim_end().to_string())
 }
 
 fn print_usage() {

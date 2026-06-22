@@ -386,38 +386,29 @@ nan
 /// Split the input string into a flat list of tokens
 /// (such as L_PAREN, WORD, and WHITESPACE)
 fn lex(text: &str) -> Vec<(SyntaxKind, String)> {
-    fn tok(t: SyntaxKind) -> m_lexer::TokenKind {
-        m_lexer::TokenKind(rowan::SyntaxKind::from(t).0)
+    let mut tokens = Vec::new();
+    let mut chars = text.char_indices().peekable();
+    while let Some((start, c)) = chars.next() {
+        let end = match c {
+            '(' | ')' => start + 1,
+            c if c.is_whitespace() => {
+                while chars.next_if(|(_, c)| c.is_whitespace()).is_some() {}
+                chars.peek().map(|(i, _)| *i).unwrap_or(text.len())
+            }
+            _ => {
+                while chars.next_if(|(_, c)| !c.is_whitespace() && *c != '(' && *c != ')').is_some()
+                {
+                }
+                chars.peek().map(|(i, _)| *i).unwrap_or(text.len())
+            }
+        };
+        let kind = match c {
+            '(' => L_PAREN,
+            ')' => R_PAREN,
+            c if c.is_whitespace() => WHITESPACE,
+            _ => WORD,
+        };
+        tokens.push((kind, text[start..end].to_string()));
     }
-    fn kind(t: m_lexer::TokenKind) -> SyntaxKind {
-        match t.0 {
-            0 => L_PAREN,
-            1 => R_PAREN,
-            2 => WORD,
-            3 => WHITESPACE,
-            4 => ERROR,
-            _ => unreachable!(),
-        }
-    }
-
-    let lexer = m_lexer::LexerBuilder::new()
-        .error_token(tok(ERROR))
-        .tokens(&[
-            (tok(L_PAREN), r"\("),
-            (tok(R_PAREN), r"\)"),
-            (tok(WORD), r"[^\s()]+"),
-            (tok(WHITESPACE), r"\s+"),
-        ])
-        .build();
-
-    lexer
-        .tokenize(text)
-        .into_iter()
-        .map(|t| (t.len, kind(t.kind)))
-        .scan(0usize, |start_offset, (len, kind)| {
-            let s: String = text[*start_offset..*start_offset + len].into();
-            *start_offset += len;
-            Some((kind, s))
-        })
-        .collect()
+    tokens
 }

@@ -1,7 +1,7 @@
-use xshell::{Shell, cmd};
+use std::process::Command;
 
 #[test]
 fn test_formatting() {
-    let sh = Shell::new().unwrap();
-    cmd!(sh, "cargo fmt --all -- --check").run().unwrap()
+    let status = Command::new("cargo").args(["fmt", "--all", "--", "--check"]).status().unwrap();
+    assert!(status.success());
 }
