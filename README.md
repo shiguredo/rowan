@@ -1,35 +1,21 @@
-# Rowan
+# shiguredo_rowan
 
-[![docs.rs](https://docs.rs/rowan/badge.svg)](https://docs.rs/rowan/)
-[![Crates.io](https://img.shields.io/crates/v/rowan.svg)](https://crates.io/crates/rowan)
-[![Crates.io](https://img.shields.io/crates/d/rowan.svg)](https://crates.io/crates/rowan)
+[![crates.io](https://img.shields.io/crates/v/shiguredo_rowan.svg)](https://crates.io/crates/shiguredo_rowan)
+[![docs.rs](https://docs.rs/shiguredo_rowan/badge.svg)](https://docs.rs/shiguredo_rowan)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![GitHub Actions](https://github.com/shiguredo/rowan/actions/workflows/ci.yaml/badge.svg)](https://github.com/shiguredo/rowan/actions/workflows/ci.yaml)
+[![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?logo=discord&logoColor=white)](https://discord.gg/shiguredo)
 
-Rowan is a library for lossless syntax trees, inspired in part by
-Swift's [libsyntax](https://github.com/apple/swift/tree/5e2c815edfd758f9b1309ce07bfc01c4bc20ec23/lib/Syntax).
-
-A conceptual overview is available in the [rust-analyzer book](https://rust-analyzer.github.io/book/contributing/syntax.html).
-
-See `examples/s_expressions` for a tutorial, and [rust-analyzer](https://github.com/rust-analyzer/rust-analyzer/) for real-world usage.
-
-## Testing
-
-This crate is primarily tested by various integration tests in rust-analyzer.
-
-## License
-
-Rowan is primarily distributed under the terms of both the MIT
-license and the Apache License (Version 2.0).
-
-See LICENSE-APACHE and LICENSE-MIT for details.
-
----
+## 概要
 
 時雨堂による [rust-analyzer/rowan](https://github.com/rust-analyzer/rowan) のフォークです。
 
 以下の変更を加えてあります。
 
+- パッケージ名を `shiguredo_rowan` に変更
 - `xtask` を削除し、`prek.toml` を追加
 - CI を `cargo run -p xtask -- ci` から `cargo test` と `cargo fmt -- --check` に変更
 - `Cargo.toml` から `[workspace]` の `xtask` メンバーを削除
 - Rust の MSRV を 1.85.0 から 1.88.0 に更新
 - 外部依存ライブラリを削減（`countme`、`serde`、`m_lexer` を削除）
+- 依存ライブラリを最新バージョンに更新
