@@ -13,7 +13,7 @@
 //!     - "+" Token(Add)
 //!     - "4" Token(Number)
 
-use rowan::{GreenNodeBuilder, NodeOrToken};
+use shiguredo_rowan::{GreenNodeBuilder, NodeOrToken};
 use std::iter::Peekable;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -35,7 +35,7 @@ enum SyntaxKind {
 
 use SyntaxKind::*;
 
-impl From<SyntaxKind> for rowan::SyntaxKind {
+impl From<SyntaxKind> for shiguredo_rowan::SyntaxKind {
     fn from(kind: SyntaxKind) -> Self {
         Self(kind as u16)
     }
@@ -43,22 +43,22 @@ impl From<SyntaxKind> for rowan::SyntaxKind {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum Lang {}
-impl rowan::Language for Lang {
+impl shiguredo_rowan::Language for Lang {
     type Kind = SyntaxKind;
-    fn kind_from_raw(raw: rowan::SyntaxKind) -> Self::Kind {
+    fn kind_from_raw(raw: shiguredo_rowan::SyntaxKind) -> Self::Kind {
         assert!(raw.0 <= ROOT as u16);
         unsafe { std::mem::transmute::<u16, SyntaxKind>(raw.0) }
     }
-    fn kind_to_raw(kind: Self::Kind) -> rowan::SyntaxKind {
+    fn kind_to_raw(kind: Self::Kind) -> shiguredo_rowan::SyntaxKind {
         kind.into()
     }
 }
 
-type SyntaxNode = rowan::SyntaxNode<Lang>;
+type SyntaxNode = shiguredo_rowan::SyntaxNode<Lang>;
 #[allow(unused)]
-type SyntaxToken = rowan::SyntaxToken<Lang>;
+type SyntaxToken = shiguredo_rowan::SyntaxToken<Lang>;
 #[allow(unused)]
-type SyntaxElement = rowan::NodeOrToken<SyntaxNode, SyntaxToken>;
+type SyntaxElement = shiguredo_rowan::NodeOrToken<SyntaxNode, SyntaxToken>;
 
 struct Parser<I: Iterator<Item = (SyntaxKind, String)>> {
     builder: GreenNodeBuilder<'static>,

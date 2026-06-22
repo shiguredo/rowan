@@ -33,7 +33,7 @@ use SyntaxKind::*;
 /// user's `enum SyntaxKind` as a type parameter.
 ///
 /// First, to easily pass the enum variants into rowan via `.into()`:
-impl From<SyntaxKind> for rowan::SyntaxKind {
+impl From<SyntaxKind> for shiguredo_rowan::SyntaxKind {
     fn from(kind: SyntaxKind) -> Self {
         Self(kind as u16)
     }
@@ -44,25 +44,25 @@ impl From<SyntaxKind> for rowan::SyntaxKind {
 /// "kinds" are values from our `enum SyntaxKind`, instead of plain u16 values.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum Lang {}
-impl rowan::Language for Lang {
+impl shiguredo_rowan::Language for Lang {
     type Kind = SyntaxKind;
-    fn kind_from_raw(raw: rowan::SyntaxKind) -> Self::Kind {
+    fn kind_from_raw(raw: shiguredo_rowan::SyntaxKind) -> Self::Kind {
         assert!(raw.0 <= ROOT as u16);
         unsafe { std::mem::transmute::<u16, SyntaxKind>(raw.0) }
     }
-    fn kind_to_raw(kind: Self::Kind) -> rowan::SyntaxKind {
+    fn kind_to_raw(kind: Self::Kind) -> shiguredo_rowan::SyntaxKind {
         kind.into()
     }
 }
 
 /// GreenNode is an immutable tree, which is cheap to change,
 /// but doesn't contain offsets and parent pointers.
-use rowan::GreenNode;
+use shiguredo_rowan::GreenNode;
 
 /// You can construct GreenNodes by hand, but a builder
 /// is helpful for top-down parsers: it maintains a stack
 /// of currently in-progress nodes
-use rowan::GreenNodeBuilder;
+use shiguredo_rowan::GreenNodeBuilder;
 
 /// The parse results are stored as a "green tree".
 /// We'll discuss working with the results later
@@ -193,13 +193,13 @@ fn parse(text: &str) -> Parse {
 /// but it contains parent pointers, offsets, and
 /// has identity semantics.
 
-type SyntaxNode = rowan::SyntaxNode<Lang>;
+type SyntaxNode = shiguredo_rowan::SyntaxNode<Lang>;
 
 #[allow(unused)]
-type SyntaxToken = rowan::SyntaxToken<Lang>;
+type SyntaxToken = shiguredo_rowan::SyntaxToken<Lang>;
 
 #[allow(unused)]
-type SyntaxElement = rowan::NodeOrToken<SyntaxNode, SyntaxToken>;
+type SyntaxElement = shiguredo_rowan::NodeOrToken<SyntaxNode, SyntaxToken>;
 
 impl Parse {
     fn syntax(&self) -> SyntaxNode {
@@ -325,7 +325,7 @@ impl Atom {
     }
     fn text(&self) -> String {
         match self.0.green().children().next() {
-            Some(rowan::NodeOrToken::Token(token)) => token.text().to_string(),
+            Some(shiguredo_rowan::NodeOrToken::Token(token)) => token.text().to_string(),
             _ => unreachable!(),
         }
     }

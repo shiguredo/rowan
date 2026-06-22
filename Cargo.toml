@@ -1,20 +1,21 @@
 [package]
 name = "shiguredo_rowan"
 version = "2026.0.0"
-authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
-repository = "https://github.com/shiguredo/rowan"
-license = "Apache-2.0"
-description = "Library for generic lossless syntax trees"
 edition = "2024"
 rust-version = "1.88.0"
-exclude = [".github/", "rustfmt.toml"]
+description = "Library for generic lossless syntax trees"
+repository = "https://github.com/shiguredo/rowan"
+license = "Apache-2.0"
+include = ["/LICENSE", "/README.md", "/src/**/*"]
 
 [dependencies]
-rustc-hash = "2.1.1"
-hashbrown = { version = "0.15.2", features = [
-	"inline-more",
-	"raw-entry",
-], default-features = false }
+hashbrown = {
+  version = "0.17.1",
+  default-features = false,
+  features = [
+    "inline-more",
+    "raw-entry",
+  ]
+}
+rustc-hash = "2.1.2"
 text-size = "1.1.1"
-
-[features]
