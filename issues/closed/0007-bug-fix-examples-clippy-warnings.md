@@ -2,9 +2,9 @@
 
 - Priority: Low
 - Created: 2026-06-22
-- Completed: YYYY-MM-DD
+- Completed: 2026-06-22
 - Model: opencode-go/glm-5.2
-- Branch: feature/fix-examples-clippy-warnings
+- Branch: shiguredo
 - Polished: YYYY-MM-DD
 
 ## 目的
@@ -42,3 +42,19 @@
 - `cargo test` が通る。
 - `cargo fmt --check` が通る。
 - 既存のテストがすべて通る。
+
+## 解決方法
+
+issue 0010 の実装の一部として examples の clippy 警告を修正した。
+
+### 変更内容
+
+- `examples/math.rs` と `examples/s_expressions.rs` の `enum SyntaxKind` に `#[expect(clippy::upper_case_acronyms, reason = "...")]` を追加し、 `upper_case_acronyms` 警告を抑制した。
+- `examples/s_expressions.rs` の doc コメント後の空行を削除し、 `empty_line_after_doc_comments` 警告を解消した。
+- `#[allow(non_camel_case_types)]` は `L_PAREN` / `R_PAREN` のために必要なため維持した。
+
+### 検証結果
+
+- `RUSTFLAGS="-D warnings" cargo clippy --all-targets` : 通過
+- `cargo test` : 通過
+- `cargo fmt --check` : 通過

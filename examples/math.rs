@@ -18,6 +18,10 @@ use std::iter::Peekable;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[allow(non_camel_case_types)]
+#[expect(
+    clippy::upper_case_acronyms,
+    reason = "examples は公開 API ではなく、列挙子名は構文要素の名称を大文字で表記する従来方針を維持する"
+)]
 #[repr(u16)]
 enum SyntaxKind {
     WHITESPACE = 0,
