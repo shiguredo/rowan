@@ -13,9 +13,11 @@
 以下の変更を加えてあります。
 
 - パッケージ名を `shiguredo_rowan` に変更
-- `xtask` を削除し、`prek.toml` を追加
-- CI を `cargo run -p xtask -- ci` から `cargo test` と `cargo fmt -- --check` に変更
+- `xtask` を削除し、 `prek.toml` を追加
+- CI を `cargo run -p xtask -- ci` から `cargo fmt --all -- --check` と `cargo clippy --all-targets` と `cargo test` と `cargo test --benches --no-run` に変更
 - `Cargo.toml` から `[workspace]` の `xtask` メンバーを削除
 - Rust の MSRV を 1.85.0 から 1.88.0 に更新
-- 外部依存ライブラリを削減（`countme`、`serde`、`m_lexer` を削除）
+- 外部依存ライブラリを削減（ `countme` 、 `serde` 、 `m_lexer` を削除）
 - 依存ライブラリを最新バージョンに更新
+- criterion による wall-clock ベンチマーク基盤を追加（ `benches/green` 、 `benches/cursor` 、 `benches/api` ）
+- examples の clippy 警告を修正
