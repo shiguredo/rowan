@@ -21,3 +21,15 @@ Rowan is primarily distributed under the terms of both the MIT
 license and the Apache License (Version 2.0).
 
 See LICENSE-APACHE and LICENSE-MIT for details.
+
+---
+
+時雨堂による rust-analyzer/rowan のフォークです。
+
+以下の変更を加えてあります。
+
+- `xtask` を削除し、`prek.toml` を追加
+- CI を `cargo run -p xtask -- ci` から `cargo test` と `cargo fmt -- --check` に変更
+- `Cargo.toml` から `[workspace]` の `xtask` メンバーを削除
+- Rust の MSRV を 1.85.0 から 1.88.0 に更新
+- 外部依存ライブラリを削減（`countme`、`serde`、`m_lexer` を削除）
