@@ -2,9 +2,9 @@
 
 - Priority: Medium
 - Created: 2026-06-22
-- Completed: YYYY-MM-DD
+- Completed: 2026-06-22
 - Model: Kimi Code CLI
-- Branch: feature/add-benchmark-harness
+- Branch: shiguredo
 - Polished: 2026-06-22
 
 ## 目的
@@ -109,3 +109,34 @@
 - ベンチマークが `cargo bench` で実行できる。
 - `cargo bench -- --save-baseline <name>` が実行可能であることを確認する。
 - `benches/common.rs` に `--save-baseline` の運用方法（ベースライン名の命名、比較方法）をコメントで記載する。
+
+## 解決方法
+
+criterion 0.8 を用いた wall-clock ベンチマーク基盤を追加した。
+
+### 変更内容
+
+- `Cargo.toml` : `autobenches = false` 、 `[dev-dependencies]` に `criterion` 、 `[lib]` セクション、 `[[bench]]` セクション（ green / cursor / api ）、 `include` に `/benches/**/*.rs` を追加した。
+- `benches/common.rs` : `--save-baseline` の運用方法（ベースライン名の命名、比較方法）をコメントで記載した。
+- `benches/common/input.rs` : fixture 生成ヘルパー（ `build_tree` / `build_tree_with_cache` / `BENCH_PARAMS` / `API_BENCH_PARAMS` / `NODE` / `TOKEN` / `TARGET` 定数）を追加した。
+- `benches/common/lang.rs` : ベンチマーク専用の最小 `Language` 実装（ `BenchLang` / `BenchKind` ）を追加した。
+- `benches/green.rs` : `GreenNodeBuilder` による構文木構築のベンチマーク（ fresh cache / reuse cache ）を追加した。
+- `benches/cursor.rs` : `cursor::SyntaxNode` の preorder 走査のベンチマーク（ preorder / preorder_with_tokens ）を追加した。
+- `benches/api.rs` : `api::SyntaxNode` の子ノード走査のベンチマーク（ children / first_child_by_kind / children_by_kind ）を追加した。
+- `tests/bench_fixtures.rs` : fixture の正当性を検証するテスト（ 16 件）を追加した。総要素数・トークン数・テキスト長・ルート子数・hardcoded 期待値・境界値・kind 構造（子数 1 / 2 / 50 ）・ `BenchLang` のラウンドトリップ・ `kind_from_raw` の panic を検証する。
+- `src/green/builder.rs` : doctest の `use rowan::` を `use shiguredo_rowan::` に修正した。
+- `src/green/node.rs` : `green_siblings` の lifetime を明示した。
+- `src/cursor.rs` : `splice_children` のループを `zip` に整理し、 lifetime を明示した。
+- `src/syntax_text.rs` : `found` 関数を `res.err()` に簡略化した。
+
+### 検証結果
+
+- `cargo check --all-targets` : 通過
+- `cargo test --benches --no-run` : 通過
+- `cargo bench -- --test` : 通過（全 smoke 実行 Success ）
+- `cargo test` : 通過（ bench_fixtures 16 件 + 既存テスト全通過）
+- `cargo clippy --all-targets` : 通過
+- `cargo fmt --check` : 通過
+- `cargo test --test tidy` : 通過
+- `cargo publish --dry-run` : 通過
+- `cargo bench -- --save-baseline` : 動作確認済み

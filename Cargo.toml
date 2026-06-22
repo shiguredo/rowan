@@ -6,7 +6,8 @@ rust-version = "1.88.0"
 description = "Library for generic lossless syntax trees"
 repository = "https://github.com/shiguredo/rowan"
 license = "Apache-2.0"
-include = ["/LICENSE", "/README.md", "/src/**/*"]
+autobenches = false
+include = ["/LICENSE", "/README.md", "/src/**/*", "/benches/**/*.rs"]
 
 [dependencies]
 hashbrown = {
@@ -19,3 +20,23 @@ hashbrown = {
 }
 rustc-hash = "2.1.2"
 text-size = "1.1.1"
+
+[dev-dependencies]
+# wall-clock ベンチマーク用の計測基盤
+criterion = { version = "0.8", default-features = false, features = ["cargo_bench_support"] }
+
+[lib]
+path = "src/lib.rs"
+bench = false
+
+[[bench]]
+name = "green"
+harness = false
+
+[[bench]]
+name = "cursor"
+harness = false
+
+[[bench]]
+name = "api"
+harness = false
