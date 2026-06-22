@@ -18,6 +18,7 @@
 - `Cargo.toml` から `[workspace]` の `xtask` メンバーを削除
 - Rust の MSRV を 1.85.0 から 1.88.0 に更新
 - 外部依存ライブラリを削減（ `countme` 、 `serde` 、 `m_lexer` を削除）
-- 依存ライブラリを最新バージョンに更新
+- `hashbrown` を 0.15.2 から 0.17.1 に更新
+- `rustc-hash` を 2.1.1 から 2.1.2 に更新
 - criterion による wall-clock ベンチマーク基盤を追加（ `benches/green` 、 `benches/cursor` 、 `benches/api` ）
 - examples の clippy 警告を修正
