@@ -2,7 +2,7 @@
 
 - Priority: High
 - Created: 2026-06-22
-- Completed: YYYY-MM-DD
+- Completed: 2026-08-05
 - Model: Kimi Code CLI
 - Branch: feature/fix-investigate-unsound-sibling-optimization
 - Polished: YYYY-MM-DD
@@ -34,3 +34,7 @@
 - `cursor.rs` 内の該当メソッドに対する安全な実装が完了すること。
 - 安全性を担保するテストが追加されること。
 - すべてのテストが通ること。
+
+## 解決方法
+
+upstream の 0.17.0 で cursor mutation engine と `src/sll.rs` が削除され、 `src/cursor.rs` の `to_next_sibling` / `to_next_sibling_or_token` メソッドが存在しなくなった。フォークは 0.17.0 に追従したため、unsound の原因となっていた SLL ベースの兄弟ノード最適化はコードベースから完全に消えている。該当コードが存在しないため調査・修正は不要と判断し closed にする。
