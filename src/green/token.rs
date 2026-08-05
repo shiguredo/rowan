@@ -41,9 +41,11 @@ impl ToOwned for GreenTokenData {
 
     #[inline]
     fn to_owned(&self) -> GreenToken {
-        let green = unsafe { GreenToken::from_raw(ptr::NonNull::from(self)) };
-        let green = ManuallyDrop::new(green);
-        GreenToken::clone(&green)
+        unsafe {
+            let green = GreenToken::from_raw(ptr::NonNull::from(self));
+            let green = ManuallyDrop::new(green);
+            GreenToken::clone(&green)
+        }
     }
 }
 
@@ -112,28 +114,12 @@ impl GreenToken {
         GreenToken { ptr }
     }
     #[inline]
-    pub(crate) fn into_raw(this: GreenToken) -> ptr::NonNull<GreenTokenData> {
-        let green = ManuallyDrop::new(this);
-        let green: &GreenTokenData = &green;
-        ptr::NonNull::from(green)
-    }
-
-    /// # Safety
-    ///
-    /// This function uses `unsafe` code to create an `Arc` from a raw pointer and then transmutes it into a `ThinArc`.
-    ///
-    /// - The raw pointer must be valid and correctly aligned for the type `ReprThin`.
-    /// - The lifetime of the raw pointer must outlive the lifetime of the `Arc` created from it.
-    /// - The transmute operation must be safe, meaning that the memory layout of `Arc<ReprThin>` must be compatible with `ThinArc<GreenTokenHead, u8>`.
-    ///
-    /// Failure to uphold these invariants can lead to undefined behavior.
-    #[inline]
-    pub(crate) unsafe fn from_raw(ptr: ptr::NonNull<GreenTokenData>) -> GreenToken {
-        let arc = unsafe {
+    unsafe fn from_raw(ptr: ptr::NonNull<GreenTokenData>) -> GreenToken {
+        unsafe {
             let arc = Arc::from_raw(&ptr.as_ref().data as *const ReprThin);
-            mem::transmute::<Arc<ReprThin>, ThinArc<GreenTokenHead, u8>>(arc)
-        };
-        GreenToken { ptr: arc }
+            let arc = mem::transmute::<Arc<ReprThin>, ThinArc<GreenTokenHead, u8>>(arc);
+            GreenToken { ptr: arc }
+        }
     }
 }
 

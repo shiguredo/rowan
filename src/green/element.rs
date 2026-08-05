@@ -1,5 +1,3 @@
-use std::borrow::Cow;
-
 use crate::{
     GreenNodeData, NodeOrToken, TextSize,
     green::{GreenNode, GreenToken, SyntaxKind},
@@ -28,13 +26,6 @@ impl From<GreenToken> for GreenElement {
     #[inline]
     fn from(token: GreenToken) -> GreenElement {
         NodeOrToken::Token(token)
-    }
-}
-
-impl From<Cow<'_, GreenNodeData>> for GreenElement {
-    #[inline]
-    fn from(cow: Cow<'_, GreenNodeData>) -> Self {
-        NodeOrToken::Node(cow.into_owned())
     }
 }
 

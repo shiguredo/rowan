@@ -227,7 +227,7 @@ fn build_tree_と_build_tree_with_cache_が同じ構造を生成する() {
 fn fixture_の_kind_構造が子数_2_で仕様どおりであること() {
     // ルートの kind が NODE 、ルートの最後の子の kind が TARGET 、
     // ルートの最初の子の kind が NODE 、葉トークンの kind が TOKEN であることを検証する。
-    // これにより api ベンチの first_child_by_kind 最悪ケース計測の妥当性を保証する。
+    // これにより api ベンチの最初の一致探索最悪ケース計測の妥当性を保証する。
     // 検証しやすさのため子数 2 / 深さ 3 の小さい木を使う。
     let tree = build_tree(3, 2, 1);
     assert_eq!(tree.kind(), input::NODE, "ルートの kind は NODE");

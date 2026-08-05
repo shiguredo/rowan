@@ -65,7 +65,6 @@ impl<T> Arc<T> {
 impl<T: ?Sized> Arc<T> {
     #[inline]
     fn inner(&self) -> &ArcInner<T> {
-        // SAFETY:
         // This unsafety is ok because while this arc is alive we're guaranteed
         // that the inner pointer is valid. Furthermore, we know that the
         // `ArcInner` structure itself is `Sync` because the inner data is
@@ -256,9 +255,12 @@ impl<H, T> Deref for HeaderSlice<H, [T; 0]> {
     type Target = HeaderSlice<H, [T]>;
 
     fn deref(&self) -> &Self::Target {
-        let len = self.length;
-        let fake_slice: *const [T] = ptr::slice_from_raw_parts(self as *const _ as *const T, len);
-        unsafe { &*(fake_slice as *const HeaderSlice<H, [T]>) }
+        unsafe {
+            let len = self.length;
+            let fake_slice: *const [T] =
+                ptr::slice_from_raw_parts(self as *const _ as *const T, len);
+            &*(fake_slice as *const HeaderSlice<H, [T]>)
+        }
     }
 }
 
@@ -313,7 +315,10 @@ impl<H, T> ThinArc<H, T> {
         };
 
         // Expose the transient Arc to the callback, which may clone it if it wants.
-        f(&transient)
+        let result = f(&transient);
+
+        // Forward the result.
+        result
     }
 
     /// Creates a `ThinArc` for a HeaderSlice using the given header struct and
