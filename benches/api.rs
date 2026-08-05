@@ -30,17 +30,17 @@ fn children(c: &mut Criterion) {
     group.finish();
 }
 
-/// `first_child_by_kind` 計測 : 最悪ケース（最後の子が Target ）
-fn first_child_by_kind(c: &mut Criterion) {
+/// 最初の一致探索計測 : 最悪ケース（最後の子が Target ）
+fn first_child_matching(c: &mut Criterion) {
     let mut group = c.benchmark_group("api");
     for &(depth, children, token_len) in input::API_BENCH_PARAMS {
         // 木は b.iter 外で構築する
         let green = input::build_tree(depth, children, token_len);
         let node = SyntaxNode::<BenchLang>::new_root(green);
-        let id = format!("d{depth}_c{children}_t{token_len}_first_child_by_kind");
+        let id = format!("d{depth}_c{children}_t{token_len}_first_child_matching");
         group.bench_with_input(BenchmarkId::from_parameter(id), &node, |b, node| {
             b.iter(|| {
-                let found = node.first_child_by_kind(&|kind| kind == BenchKind::Target);
+                let found = node.children().find(|child| child.kind() == BenchKind::Target);
                 black_box(found);
             });
         });
@@ -48,17 +48,17 @@ fn first_child_by_kind(c: &mut Criterion) {
     group.finish();
 }
 
-/// `children().by_kind` 計測 : Target に一致する子を全消費する
-fn children_by_kind(c: &mut Criterion) {
+/// `children().filter` 計測 : Target に一致する子を全消費する
+fn children_matching(c: &mut Criterion) {
     let mut group = c.benchmark_group("api");
     for &(depth, children, token_len) in input::API_BENCH_PARAMS {
         // 木は b.iter 外で構築する
         let green = input::build_tree(depth, children, token_len);
         let node = SyntaxNode::<BenchLang>::new_root(green);
-        let id = format!("d{depth}_c{children}_t{token_len}_children_by_kind");
+        let id = format!("d{depth}_c{children}_t{token_len}_children_matching");
         group.bench_with_input(BenchmarkId::from_parameter(id), &node, |b, node| {
             b.iter(|| {
-                node.children().by_kind(|kind| kind == BenchKind::Target).for_each(|n| {
+                node.children().filter(|child| child.kind() == BenchKind::Target).for_each(|n| {
                     black_box(n);
                 });
             });
@@ -67,5 +67,5 @@ fn children_by_kind(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, children, first_child_by_kind, children_by_kind);
+criterion_group!(benches, children, first_child_matching, children_matching);
 criterion_main!(benches);

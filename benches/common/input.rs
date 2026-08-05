@@ -11,7 +11,7 @@ pub const NODE: SyntaxKind = SyntaxKind(0);
 /// 葉トークンの kind
 pub const TOKEN: SyntaxKind = SyntaxKind(1);
 
-/// api ベンチで `first_child_by_kind` の最悪ケース（最後の子に一致）を計測するための kind 。
+/// api ベンチで最初の一致探索（最後の子に一致）の最悪ケースを計測するための kind 。
 /// ルートの最後の子にのみ割り当てられる。
 pub const TARGET: SyntaxKind = SyntaxKind(2);
 
@@ -36,7 +36,7 @@ pub const BENCH_PARAMS: &[(usize, usize, usize)] = &[
 /// api ベンチの計測パラメータ : （深さ、子数、トークン長）
 ///
 /// api ベンチは c >= 2 かつ d >= 3 の組み合わせのみ使用する。
-/// c = 1 は子が 1 つのみで `first_child_by_kind` の最悪ケースにならない。
+/// c = 1 は子が 1 つのみで最初の一致探索の最悪ケースにならない。
 /// d = 2 は子がすべてトークンで `children()` が空になるため。
 //
 // 複数のベンチマークターゲットで共有されるモジュールのため、ターゲットによっては未使用になる。
