@@ -12,12 +12,13 @@
 
 以下の変更を加えてあります。
 
+- upstream 0.17.0 に追従（ typed mutable API と cursor mutation engine を削除する後方互換のない変更を含む）
 - パッケージ名を `shiguredo_rowan` に変更
 - `xtask` を削除し、 `prek.toml` を追加
 - CI を `cargo run -p xtask -- ci` から `cargo fmt --all -- --check` と `cargo clippy --all-targets` と `cargo test` と `cargo test --benches --no-run` に変更
 - `Cargo.toml` から `[workspace]` の `xtask` メンバーを削除
 - Rust の MSRV を 1.85.0 から 1.88.0 に更新
-- 外部依存ライブラリを削減（ `countme` 、 `serde` 、 `m_lexer` を削除）
+- 外部依存ライブラリを削減（ `countme` 、 `serde` 、 `m_lexer` 、 `memoffset` を削除）
 - `hashbrown` を 0.15.2 から 0.17.1 に更新
 - `rustc-hash` を 2.1.1 から 2.1.2 に更新
 - criterion による wall-clock ベンチマーク基盤を追加（ `benches/green` 、 `benches/cursor` 、 `benches/api` ）
